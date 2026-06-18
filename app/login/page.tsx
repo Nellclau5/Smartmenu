@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AppLogo } from "@/components/brand/app-logo";
 import { LoginForm } from "@/components/auth/login-form";
 
 interface LoginPageProps {
@@ -11,9 +12,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Smart Menu</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <div className="flex flex-col items-center text-center">
+          <AppLogo size={48} />
+          <p className="mt-3 text-sm text-muted-foreground">
             Connectez-vous pour gérer votre menu
           </p>
         </div>

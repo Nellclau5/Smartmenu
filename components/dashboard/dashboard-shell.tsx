@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AppLogo } from "@/components/brand/app-logo";
 import { usePathname } from "next/navigation";
 import { Home, UtensilsCrossed, User, LogOut, ClipboardList } from "lucide-react";
 import { NotificationEnableBanner } from "@/components/notifications/notification-enable-banner";
@@ -38,7 +39,7 @@ export function DashboardShell({ restaurant, children }: DashboardShellProps) {
       {/* Sidebar desktop */}
       <aside className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col border-r bg-background">
         <div className="flex h-16 items-center border-b px-6">
-          <span className="font-bold text-lg">Smart Menu</span>
+          <AppLogo size={32} labelClassName="text-lg" />
         </div>
         <nav className="flex-1 space-y-1 p-4">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
