@@ -5,27 +5,30 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MenuItemCard } from "@/components/dashboard/menu-item-card";
 import { MenuItemFormDialog } from "@/components/dashboard/menu-item-form-dialog";
+import { CategoryManager } from "@/components/dashboard/category-manager";
 import { createClient } from "@/lib/supabase/client";
 import { itemsByCategory as filterByCategory } from "@/lib/menu-utils";
 import { useRestaurant } from "@/components/dashboard/restaurant-context";
-import { MENU_CATEGORIES, type MenuCategory, type MenuItem } from "@/lib/supabase/types";
+import {
+  getRestaurantCategories,
+  sortItemsByCategories,
+} from "@/lib/categories";
+import type { MenuCategory, MenuItem } from "@/lib/supabase/types";
 
-function sortItems(items: MenuItem[]): MenuItem[] {
-  return [...items].sort((a, b) => {
-    const catOrder = MENU_CATEGORIES.indexOf(a.category) - MENU_CATEGORIES.indexOf(b.category);
-    if (catOrder !== 0) return catOrder;
-    return (a.sort_order ?? 0) - (b.sort_order ?? 0);
-  });
-}
-
-/** Gestion du menu — cartes par catégorie, CRUD complet, toggle 1-click */
+/** Gestion du menu — catégories personnalisées, CRUD, toggle 1-click */
 export function MenuDashboard() {
-  const { id: restaurantId } = useRestaurant();
+  const restaurant = useRestaurant();
+  const { id: restaurantId } = restaurant;
+  const [categories, setCategories] = useState<string[]>(() =>
+    getRestaurantCategories(restaurant)
+  );
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [defaultCategory, setDefaultCategory] = useState<MenuCategory>("Plats");
+  const [defaultCategory, setDefaultCategory] = useState<MenuCategory>(
+    () => getRestaurantCategories(restaurant)[0] ?? "Plats"
+  );
 
   const fetchItems = useCallback(async () => {
     const client = createClient();
@@ -37,10 +40,10 @@ export function MenuDashboard() {
       .order("name");
 
     if (!error && data) {
-      setItems(sortItems(data as MenuItem[]));
+      setItems(sortItemsByCategories(data as MenuItem[], categories));
     }
     setLoading(false);
-  }, [restaurantId]);
+  }, [restaurantId, categories]);
 
   useEffect(() => {
     fetchItems();
@@ -53,10 +56,10 @@ export function MenuDashboard() {
   function handleSaved(item: MenuItem) {
     setItems((prev) => {
       const exists = prev.find((i) => i.id === item.id);
-      if (exists) {
-        return sortItems(prev.map((i) => (i.id === item.id ? item : i)));
-      }
-      return sortItems([...prev, item]);
+      const next = exists
+        ? prev.map((i) => (i.id === item.id ? item : i))
+        : [...prev, item];
+      return sortItemsByCategories(next, categories);
     });
     setEditingItem(null);
   }
@@ -83,17 +86,18 @@ export function MenuDashboard() {
     ]);
 
     setItems((prev) =>
-      sortItems(
+      sortItemsByCategories(
         prev.map((i) => {
           if (i.id === item.id) return { ...i, sort_order: other.sort_order };
           if (i.id === other.id) return { ...i, sort_order: item.sort_order };
           return i;
-        })
+        }),
+        categories
       )
     );
   }
 
-  function openAdd(category: MenuCategory = "Plats") {
+  function openAdd(category: MenuCategory = defaultCategory) {
     setEditingItem(null);
     setDefaultCategory(category);
     setDialogOpen(true);
@@ -109,10 +113,17 @@ export function MenuDashboard() {
       </div>
 
       <main className="px-4 py-4 md:px-0 space-y-8">
+        <CategoryManager
+          restaurantId={restaurantId}
+          categories={categories}
+          items={items}
+          onCategoriesChange={setCategories}
+        />
+
         {loading ? (
           <p className="text-center text-muted-foreground py-16">Chargement...</p>
         ) : (
-          MENU_CATEGORIES.map((cat) => {
+          categories.map((cat) => {
             const catItems = itemsByCategory(cat);
             return (
               <section key={cat}>
@@ -173,6 +184,7 @@ export function MenuDashboard() {
           if (!v) setEditingItem(null);
         }}
         restaurantId={restaurantId}
+        categories={categories}
         defaultCategory={editingItem?.category ?? defaultCategory}
         item={editingItem}
         onSaved={handleSaved}

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { OrderNotifications } from "@/components/dashboard/order-notifications";
 import { RestaurantProvider } from "@/components/dashboard/restaurant-context";
 import { getOrCreateRestaurant } from "@/lib/get-restaurant";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +31,7 @@ export default async function DashboardLayout({
 
   return (
     <RestaurantProvider restaurant={restaurant}>
+      <OrderNotifications />
       <DashboardShell restaurant={restaurant}>{children}</DashboardShell>
     </RestaurantProvider>
   );

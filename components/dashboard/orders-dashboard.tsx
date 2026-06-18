@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ClipboardList, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Bell, ClipboardList, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,11 +10,17 @@ import { useRestaurant } from "@/components/dashboard/restaurant-context";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import {
+  getNotificationPermission,
+  requestNotificationPermission,
+} from "@/lib/notifications";
+import {
   ORDER_STATUS_LABELS,
   type Order,
   type OrderItem,
   type OrderStatus,
 } from "@/lib/supabase/types";
+
+const POLL_MS = 5000;
 
 const STATUS_FLOW: OrderStatus[] = ["pending", "preparing", "ready", "completed"];
 
@@ -38,6 +44,8 @@ export function OrdersDashboard() {
   const { id: restaurantId } = useRestaurant();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const seenIdsRef = useRef<Set<string>>(new Set());
 
   const fetchOrders = useCallback(async () => {
     const supabase = createClient();
@@ -49,14 +57,17 @@ export function OrdersDashboard() {
       .limit(50);
 
     if (!error && data) {
-      setOrders(data as Order[]);
+      const next = data as Order[];
+      next.forEach((o) => seenIdsRef.current.add(o.id));
+      setOrders(next);
     }
     setLoading(false);
   }, [restaurantId]);
 
   useEffect(() => {
+    setNotifEnabled(getNotificationPermission() === "granted");
     fetchOrders();
-    const interval = setInterval(fetchOrders, 30000);
+    const interval = setInterval(fetchOrders, POLL_MS);
     return () => clearInterval(interval);
   }, [fetchOrders]);
 
@@ -81,8 +92,35 @@ export function OrdersDashboard() {
     (o) => o.status !== "completed" && o.status !== "cancelled"
   );
 
+  const isNewOrder = (order: Order) =>
+    order.status === "pending" &&
+    Date.now() - new Date(order.created_at).getTime() < 120_000;
+
   return (
     <div className="space-y-6 px-4 pt-6 md:px-0 md:pt-0">
+      {!notifEnabled && (
+        <Card className="border-primary/30 bg-primary/5 shadow-none">
+          <CardContent className="p-4 flex items-center gap-3">
+            <Bell className="h-8 w-8 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">Notifications de commandes</p>
+              <p className="text-xs text-muted-foreground">
+                Recevez une alerte à chaque nouvelle commande
+              </p>
+            </div>
+            <Button
+              size="sm"
+              onClick={async () => {
+                const ok = await requestNotificationPermission();
+                setNotifEnabled(ok);
+              }}
+            >
+              Activer
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Commandes</h1>
@@ -119,7 +157,13 @@ export function OrdersDashboard() {
             const next = nextStatus(order.status);
 
             return (
-              <Card key={order.id} className="shadow-sm overflow-hidden">
+              <Card
+                key={order.id}
+                className={cn(
+                  "shadow-sm overflow-hidden transition-shadow",
+                  isNewOrder(order) && "ring-2 ring-primary shadow-md"
+                )}
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>

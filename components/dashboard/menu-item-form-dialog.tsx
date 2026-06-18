@@ -15,12 +15,13 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { menuItemStoragePath, uploadImage } from "@/lib/upload-image";
-import { MENU_CATEGORIES, type MenuCategory, type MenuItem } from "@/lib/supabase/types";
+import type { MenuCategory, MenuItem } from "@/lib/supabase/types";
 
 interface MenuItemFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   restaurantId: string;
+  categories: string[];
   defaultCategory?: MenuCategory;
   item?: MenuItem | null;
   onSaved: (item: MenuItem) => void;
@@ -31,6 +32,7 @@ export function MenuItemFormDialog({
   open,
   onOpenChange,
   restaurantId,
+  categories,
   defaultCategory = "Plats",
   item,
   onSaved,
@@ -215,7 +217,7 @@ export function MenuItemFormDialog({
               onChange={(e) => setCategory(e.target.value as MenuCategory)}
               className="flex h-11 w-full rounded-xl border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {MENU_CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>

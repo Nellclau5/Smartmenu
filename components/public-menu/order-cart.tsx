@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,10 @@ import {
 } from "@/components/ui/dialog";
 import { useCart } from "@/components/public-menu/cart-context";
 import { formatPrice } from "@/lib/utils";
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+} from "@/lib/notifications";
 import type { Restaurant } from "@/lib/supabase/types";
 
 interface OrderCartProps {
@@ -22,6 +27,7 @@ interface OrderCartProps {
 
 /** Panier flottant + validation de commande */
 export function OrderCart({ restaurant }: OrderCartProps) {
+  const router = useRouter();
   const { lines, itemCount, total, setQuantity, removeItem, clearCart } = useCart();
   const [open, setOpen] = useState(false);
   const [tableNumber, setTableNumber] = useState("");
@@ -30,6 +36,7 @@ export function OrderCart({ restaurant }: OrderCartProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,10 +66,15 @@ export function OrderCart({ restaurant }: OrderCartProps) {
         return;
       }
 
+      if (getNotificationPermission() === "default") {
+        await requestNotificationPermission();
+      }
+
       clearCart();
       setTableNumber("");
       setCustomerName("");
       setNotes("");
+      setOrderId(data.order_id as string);
       setSuccess(true);
     } catch {
       setError("Connexion impossible. Vérifiez votre réseau.");
@@ -76,6 +88,7 @@ export function OrderCart({ restaurant }: OrderCartProps) {
     if (!next) {
       setError(null);
       setSuccess(false);
+      setOrderId(null);
     }
   }
 
@@ -104,11 +117,26 @@ export function OrderCart({ restaurant }: OrderCartProps) {
               <DialogHeader>
                 <DialogTitle>Commande envoyée ✓</DialogTitle>
                 <DialogDescription>
-                  Votre commande a été transmise au restaurant. Elle sera préparée sous peu.
+                  Suivez l&apos;avancement de votre commande en temps réel.
                 </DialogDescription>
               </DialogHeader>
-              <Button className="w-full h-12" onClick={() => handleOpenChange(false)}>
-                Continuer
+              <Button
+                className="w-full h-12"
+                onClick={() => {
+                  if (orderId) {
+                    router.push(`/menu/${restaurant.slug}/commande/${orderId}`);
+                  }
+                  handleOpenChange(false);
+                }}
+              >
+                Suivre ma commande
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleOpenChange(false)}
+              >
+                Continuer le menu
               </Button>
             </>
           ) : (

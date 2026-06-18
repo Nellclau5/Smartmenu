@@ -1,5 +1,6 @@
-export type MenuCategory = "Entrées" | "Plats" | "Desserts" | "Boissons";
+export type MenuCategory = string;
 
+/** @deprecated Utiliser DEFAULT_MENU_CATEGORIES depuis lib/categories */
 export const MENU_CATEGORIES: MenuCategory[] = [
   "Entrées",
   "Plats",
@@ -17,6 +18,7 @@ export interface Restaurant {
   logo_url: string | null;
   welcome_message: string | null;
   opening_hours: string | null;
+  menu_categories: string[] | null;
   subscription_status: SubscriptionStatus;
   is_active: boolean;
 }

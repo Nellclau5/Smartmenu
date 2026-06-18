@@ -13,30 +13,14 @@ import { ThemeToggle } from "@/components/public-menu/theme-toggle";
 import { OfflineCacheHint } from "@/components/public-menu/offline-cache-hint";
 import { CartProvider } from "@/components/public-menu/cart-context";
 import { OrderCart } from "@/components/public-menu/order-cart";
-
+import { getOrderedCategories, getRestaurantCategories } from "@/lib/categories";
 import {
-
   DEFAULT_MENU_FILTERS,
-
   filterMenuItems,
-
   itemsByCategory as filterByCategory,
-
 } from "@/lib/menu-utils";
 
-import {
-
-  MENU_CATEGORIES,
-
-  type MenuCategory,
-
-  type MenuFilters,
-
-  type MenuItem,
-
-  type Restaurant,
-
-} from "@/lib/supabase/types";
+import type { MenuCategory, MenuFilters, MenuItem, Restaurant } from "@/lib/supabase/types";
 
 
 
@@ -53,8 +37,14 @@ interface PublicMenuViewProps {
 /** Vue menu public — header, recherche, catégories sticky, scroll fluide */
 
 export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
+  const menuCategories = useMemo(
+    () => getRestaurantCategories(restaurant),
+    [restaurant]
+  );
 
-  const [activeCategory, setActiveCategory] = useState<MenuCategory>("Entrées");
+  const [activeCategory, setActiveCategory] = useState<MenuCategory>(
+    () => menuCategories[0] ?? "Plats"
+  );
 
   const [filters, setFilters] = useState<MenuFilters>(DEFAULT_MENU_FILTERS);
 
@@ -91,8 +81,8 @@ export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
 
 
   const visibleCategories = useMemo(
-    () => MENU_CATEGORIES.filter((cat) => filterByCategory(filteredItems, cat).length > 0),
-    [filteredItems]
+    () => getOrderedCategories(menuCategories, filteredItems),
+    [menuCategories, filteredItems]
   );
 
 
@@ -311,7 +301,7 @@ export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
 
           ) : (
 
-            MENU_CATEGORIES.map((cat) => {
+            visibleCategories.map((cat) => {
 
               const catItems = itemsByCategory(cat);
 
