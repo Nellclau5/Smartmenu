@@ -1,6 +1,6 @@
 // Service Worker — cache shell + pages menu pour mode hors-ligne
 
-const CACHE_STATIC = "smart-menu-static-v6";
+const CACHE_STATIC = "smart-menu-static-v7";
 
 const CACHE_PAGES = "smart-menu-pages-v2";
 

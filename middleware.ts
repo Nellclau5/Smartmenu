@@ -38,10 +38,6 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === "/login" ||
     request.nextUrl.pathname === "/register";
 
-  if (request.nextUrl.pathname === "/" && user) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
   if (isDashboard && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

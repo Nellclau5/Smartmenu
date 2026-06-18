@@ -84,7 +84,11 @@ const navLinks = [
   { href: "/menu/demo", label: "Démo" },
 ];
 
-export function LandingPage() {
+interface LandingPageProps {
+  isLoggedIn?: boolean;
+}
+
+export function LandingPage({ isLoggedIn = false }: LandingPageProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -117,12 +121,20 @@ export function LandingPage() {
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/login">Connexion</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/register">Commencer gratuitement</Link>
-            </Button>
+            {isLoggedIn ? (
+              <Button size="sm" asChild>
+                <Link href="/dashboard">Mon tableau de bord</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/login">Connexion</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/register">Commencer gratuitement</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           <button
@@ -149,12 +161,20 @@ export function LandingPage() {
                 </Link>
               ))}
               <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
-                <Button variant="outline" asChild>
-                  <Link href="/login">Connexion</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/register">Commencer gratuitement</Link>
-                </Button>
+                {isLoggedIn ? (
+                  <Button asChild>
+                    <Link href="/dashboard">Mon tableau de bord</Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="outline" asChild>
+                      <Link href="/login">Connexion</Link>
+                    </Button>
+                    <Button asChild>
+                      <Link href="/register">Commencer gratuitement</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
@@ -184,12 +204,21 @@ export function LandingPage() {
               </p>
 
               <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
-                <Button size="lg" className="w-full sm:w-auto" asChild>
-                  <Link href="/register">
-                    <ChefHat className="h-4 w-4" />
-                    Créer mon menu gratuitement
-                  </Link>
-                </Button>
+                {isLoggedIn ? (
+                  <Button size="lg" className="w-full sm:w-auto" asChild>
+                    <Link href="/dashboard">
+                      <ChefHat className="h-4 w-4" />
+                      Mon tableau de bord
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button size="lg" className="w-full sm:w-auto" asChild>
+                    <Link href="/register">
+                      <ChefHat className="h-4 w-4" />
+                      Créer mon menu gratuitement
+                    </Link>
+                  </Button>
+                )}
                 <Button
                   size="lg"
                   variant="outline"
@@ -310,22 +339,35 @@ export function LandingPage() {
               dès maintenant.
             </p>
             <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full border-white/30 bg-white text-primary hover:bg-white/90 sm:w-auto"
-                asChild
-              >
-                <Link href="/register">Créer mon compte</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="ghost"
-                className="w-full text-primary-foreground hover:bg-white/10 sm:w-auto"
-                asChild
-              >
-                <Link href="/login">J&apos;ai déjà un compte</Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full border-white/30 bg-white text-primary hover:bg-white/90 sm:w-auto"
+                  asChild
+                >
+                  <Link href="/dashboard">Accéder au tableau de bord</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-white/30 bg-white text-primary hover:bg-white/90 sm:w-auto"
+                    asChild
+                  >
+                    <Link href="/register">Créer mon compte</Link>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="ghost"
+                    className="w-full text-primary-foreground hover:bg-white/10 sm:w-auto"
+                    asChild
+                  >
+                    <Link href="/login">J&apos;ai déjà un compte</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -339,12 +381,20 @@ export function LandingPage() {
             <Link href="/menu/demo" className="hover:text-foreground">
               Démo
             </Link>
-            <Link href="/login" className="hover:text-foreground">
-              Connexion
-            </Link>
-            <Link href="/register" className="hover:text-foreground">
-              Inscription
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="hover:text-foreground">
+                Tableau de bord
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-foreground">
+                  Connexion
+                </Link>
+                <Link href="/register" className="hover:text-foreground">
+                  Inscription
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </footer>

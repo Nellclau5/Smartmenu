@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { LandingPage } from "@/components/landing/landing-page";
 import { createClient } from "@/lib/supabase/server";
 
@@ -15,9 +14,5 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) {
-    redirect("/dashboard");
-  }
-
-  return <LandingPage />;
+  return <LandingPage isLoggedIn={!!user} />;
 }
