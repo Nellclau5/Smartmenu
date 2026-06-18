@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AppLogo } from "@/components/brand/app-logo";
+import { PwaInstallBanner } from "@/components/pwa/pwa-install-banner";
 import { useState } from "react";
 import {
   Bell,
@@ -159,6 +160,8 @@ export function LandingPage() {
           </div>
         )}
       </header>
+
+      <PwaInstallBanner sticky />
 
       <main>
         <section className="relative mx-auto max-w-6xl px-4 pb-20 pt-12 sm:px-6 sm:pt-20 lg:pb-28">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,10 +25,11 @@ import type { Restaurant } from "@/lib/supabase/types";
 
 interface OrderCartProps {
   restaurant: Restaurant;
+  demoMode?: boolean;
 }
 
 /** Panier flottant + validation de commande */
-export function OrderCart({ restaurant }: OrderCartProps) {
+export function OrderCart({ restaurant, demoMode = false }: OrderCartProps) {
   const router = useRouter();
   const { lines, itemCount, total, setQuantity, removeItem, clearCart } = useCart();
   const [open, setOpen] = useState(false);
@@ -50,6 +52,16 @@ export function OrderCart({ restaurant }: OrderCartProps) {
     setSubmitting(true);
 
     try {
+      if (demoMode) {
+        clearCart();
+        setTableNumber("");
+        setCustomerName("");
+        setNotes("");
+        setOrderId("demo");
+        setSuccess(true);
+        return;
+      }
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,22 +140,32 @@ export function OrderCart({ restaurant }: OrderCartProps) {
           {success ? (
             <>
               <DialogHeader>
-                <DialogTitle>Commande envoyée ✓</DialogTitle>
+                <DialogTitle>
+                  {demoMode ? "Commande simulée ✓" : "Commande envoyée ✓"}
+                </DialogTitle>
                 <DialogDescription>
-                  Suivez l&apos;avancement de votre commande en temps réel.
+                  {demoMode
+                    ? "En mode démo, la commande n'est pas envoyée au restaurant. Créez votre compte pour recevoir de vraies commandes."
+                    : "Suivez l'avancement de votre commande en temps réel."}
                 </DialogDescription>
               </DialogHeader>
-              <Button
-                className="w-full h-12"
-                onClick={() => {
-                  if (orderId) {
-                    router.push(`/menu/${restaurant.slug}/commande/${orderId}`);
-                  }
-                  handleOpenChange(false);
-                }}
-              >
-                Suivre ma commande
-              </Button>
+              {demoMode ? (
+                <Button className="w-full h-12" asChild>
+                  <Link href="/register">Créer mon menu gratuitement</Link>
+                </Button>
+              ) : (
+                <Button
+                  className="w-full h-12"
+                  onClick={() => {
+                    if (orderId) {
+                      router.push(`/menu/${restaurant.slug}/commande/${orderId}`);
+                    }
+                    handleOpenChange(false);
+                  }}
+                >
+                  Suivre ma commande
+                </Button>
+              )}
               <Button
                 variant="outline"
                 className="w-full"

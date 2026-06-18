@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import { StickyCategoryNav } from "@/components/public-menu/sticky-category-nav";
 import { MenuItemCard } from "@/components/public-menu/menu-item-card";
@@ -30,13 +31,15 @@ interface PublicMenuViewProps {
 
   items: MenuItem[];
 
+  demoMode?: boolean;
+
 }
 
 
 
 /** Vue menu public — header, recherche, catégories sticky, scroll fluide */
 
-export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
+export function PublicMenuView({ restaurant, items, demoMode = false }: PublicMenuViewProps) {
   const menuCategories = useMemo(
     () => getRestaurantCategories(restaurant),
     [restaurant]
@@ -164,6 +167,16 @@ export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
   return (
     <CartProvider>
     <div className="min-h-dvh bg-background">
+
+      {demoMode && (
+        <div className="safe-top border-b border-primary/20 bg-primary/10 px-4 py-2.5 text-center text-sm">
+          <span className="font-semibold text-primary">Mode démo</span>
+          <span className="text-muted-foreground"> — Aperçu du menu client. </span>
+          <Link href="/register" className="font-medium text-primary underline-offset-2 hover:underline">
+            Créer mon menu
+          </Link>
+        </div>
+      )}
 
       <OfflineCacheHint slug={restaurant.slug} />
 
@@ -354,7 +367,7 @@ export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
         </div>
 
       </div>
-      <OrderCart restaurant={restaurant} />
+      <OrderCart restaurant={restaurant} demoMode={demoMode} />
     </div>
     </CartProvider>
   );

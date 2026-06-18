@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ClipboardList, RefreshCw } from "lucide-react";
+import { ClipboardList, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { useRestaurant } from "@/components/dashboard/restaurant-context";
 import { formatPrice } from "@/lib/utils";
@@ -37,13 +39,25 @@ function formatTime(iso: string) {
 
 /** Liste des commandes clients pour le restaurateur */
 export function OrdersDashboard() {
-  const { id: restaurantId } = useRestaurant();
+  const restaurant = useRestaurant();
+  const restaurantId = restaurant.id;
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [autoDelete, setAutoDelete] = useState(
+    restaurant.auto_delete_orders_after_24h ?? false
+  );
+  const [savingSetting, setSavingSetting] = useState(false);
   const seenIdsRef = useRef<Set<string>>(new Set());
 
   const fetchOrders = useCallback(async () => {
     const supabase = createClient();
+
+    if (autoDelete) {
+      await supabase.rpc("purge_old_orders", {
+        p_restaurant_id: restaurantId,
+      });
+    }
+
     const { data, error } = await supabase
       .from("orders")
       .select("*, order_items(*)")
@@ -57,13 +71,31 @@ export function OrdersDashboard() {
       setOrders(next);
     }
     setLoading(false);
-  }, [restaurantId]);
+  }, [restaurantId, autoDelete]);
 
   useEffect(() => {
     fetchOrders();
     const interval = setInterval(fetchOrders, POLL_MS);
     return () => clearInterval(interval);
   }, [fetchOrders]);
+
+  async function updateAutoDelete(enabled: boolean) {
+    setSavingSetting(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("restaurants")
+      .update({ auto_delete_orders_after_24h: enabled })
+      .eq("id", restaurantId);
+
+    setSavingSetting(false);
+
+    if (!error) {
+      setAutoDelete(enabled);
+      if (enabled) {
+        await fetchOrders();
+      }
+    }
+  }
 
   async function updateStatus(orderId: string, status: OrderStatus) {
     const supabase = createClient();
@@ -103,6 +135,27 @@ export function OrdersDashboard() {
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
+
+      <Card className="border-primary/20 bg-primary/5 shadow-none">
+        <CardContent className="flex items-start gap-4 p-4">
+          <Trash2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0 space-y-1">
+            <Label htmlFor="auto-delete" className="font-medium text-sm cursor-pointer">
+              Suppression automatique après 24 h
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Les commandes terminées ou annulées sont effacées automatiquement
+              24 heures après leur création.
+            </p>
+          </div>
+          <Switch
+            id="auto-delete"
+            checked={autoDelete}
+            onCheckedChange={updateAutoDelete}
+            disabled={savingSetting}
+          />
+        </CardContent>
+      </Card>
 
       {loading ? (
         <p className="text-center text-muted-foreground py-16">Chargement...</p>

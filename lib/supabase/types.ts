@@ -19,6 +19,7 @@ export interface Restaurant {
   welcome_message: string | null;
   opening_hours: string | null;
   menu_categories: string[] | null;
+  auto_delete_orders_after_24h?: boolean;
   subscription_status: SubscriptionStatus;
   is_active: boolean;
 }
