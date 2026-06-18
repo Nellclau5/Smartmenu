@@ -43,3 +43,40 @@ export interface MenuFilters {
   spicy: boolean;
   price: PriceFilter;
 }
+
+export type OrderStatus = "pending" | "preparing" | "ready" | "completed" | "cancelled";
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: "En attente",
+  preparing: "En préparation",
+  ready: "Prête",
+  completed: "Terminée",
+  cancelled: "Annulée",
+};
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  menu_item_id: string | null;
+  item_name: string;
+  unit_price: number;
+  quantity: number;
+  line_total: number;
+}
+
+export interface Order {
+  id: string;
+  restaurant_id: string;
+  table_number: string;
+  customer_name: string | null;
+  notes: string | null;
+  status: OrderStatus;
+  total_amount: number;
+  created_at: string;
+  order_items?: OrderItem[];
+}
+
+export interface CartLineInput {
+  menu_item_id: string;
+  quantity: number;
+}

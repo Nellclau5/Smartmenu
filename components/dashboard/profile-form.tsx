@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,12 +18,14 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ restaurant: initial }: ProfileFormProps) {
+  const router = useRouter();
   const [name, setName] = useState(initial.name);
   const [logoUrl, setLogoUrl] = useState(initial.logo_url ?? "");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [openingHours, setOpeningHours] = useState(initial.opening_hours ?? "");
   const [welcomeMessage, setWelcomeMessage] = useState(initial.welcome_message ?? "");
   const [loading, setLoading] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,6 +77,14 @@ export function ProfileForm({ restaurant: initial }: ProfileFormProps) {
 
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
+  }
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
   }
 
   return (
@@ -132,6 +144,27 @@ export function ProfileForm({ restaurant: initial }: ProfileFormProps) {
           {loading ? "Enregistrement..." : "Enregistrer le profil"}
         </Button>
       </form>
+
+      <Card className="border-none shadow-sm">
+        <CardContent className="p-4 space-y-3">
+          <div>
+            <h2 className="font-semibold">Compte</h2>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              Déconnectez-vous pour changer de compte ou sécuriser l&apos;app sur cet appareil.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-12 gap-2 text-destructive hover:text-destructive"
+            onClick={handleLogout}
+            disabled={loggingOut}
+          >
+            <LogOut className="h-4 w-4" />
+            {loggingOut ? "Déconnexion..." : "Se déconnecter"}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

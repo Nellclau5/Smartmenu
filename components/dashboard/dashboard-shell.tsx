@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, UtensilsCrossed, User, LogOut } from "lucide-react";
+import { Home, UtensilsCrossed, User, LogOut, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -12,6 +12,7 @@ import type { Restaurant } from "@/lib/supabase/types";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Accueil", icon: Home },
   { href: "/dashboard/menu", label: "Menu", icon: UtensilsCrossed },
+  { href: "/dashboard/orders", label: "Commandes", icon: ClipboardList },
   { href: "/dashboard/profile", label: "Profil", icon: User },
 ];
 

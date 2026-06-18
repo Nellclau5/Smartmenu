@@ -7,14 +7,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 
 import { StickyCategoryNav } from "@/components/public-menu/sticky-category-nav";
-
 import { MenuItemCard } from "@/components/public-menu/menu-item-card";
-
 import { MenuSearchFilters } from "@/components/public-menu/menu-search-filters";
-
 import { ThemeToggle } from "@/components/public-menu/theme-toggle";
-
 import { OfflineCacheHint } from "@/components/public-menu/offline-cache-hint";
+import { CartProvider } from "@/components/public-menu/cart-context";
+import { OrderCart } from "@/components/public-menu/order-cart";
 
 import {
 
@@ -174,7 +172,7 @@ export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
 
 
   return (
-
+    <CartProvider>
     <div className="min-h-dvh bg-background">
 
       <OfflineCacheHint slug={restaurant.slug} />
@@ -277,7 +275,7 @@ export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
 
 
 
-        <div className="mt-4 space-y-8 pb-16 safe-bottom">
+        <div className="mt-4 space-y-8 pb-32 safe-bottom">
 
           {filteredItems.length === 0 ? (
 
@@ -366,9 +364,9 @@ export function PublicMenuView({ restaurant, items }: PublicMenuViewProps) {
         </div>
 
       </div>
-
+      <OrderCart restaurant={restaurant} />
     </div>
-
+    </CartProvider>
   );
 
 }

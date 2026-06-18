@@ -100,7 +100,7 @@ export function MenuDashboard() {
   }
 
   return (
-    <div className="relative min-h-[60dvh] pb-28 md:pb-8">
+    <div className="relative min-h-[60dvh] pb-32 md:pb-8">
       <div className="px-4 pt-6 md:px-0 md:pt-0">
         <h1 className="text-2xl font-bold tracking-tight">Gestion du menu</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -157,12 +157,13 @@ export function MenuDashboard() {
       </main>
 
       <Button
-        size="icon"
-        className="fixed bottom-20 right-4 z-20 h-14 w-14 rounded-full shadow-lg md:bottom-8 md:right-8"
+        type="button"
+        className="fixed bottom-24 right-4 z-40 h-14 gap-2 rounded-full px-5 shadow-2xl ring-4 ring-primary/25 bg-primary hover:bg-primary/90 md:bottom-8 md:right-8 md:h-16 md:px-6"
         onClick={() => openAdd()}
         aria-label="Ajouter un plat"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-6 w-6 md:h-7 md:w-7" />
+        <span className="font-semibold text-sm md:text-base">Ajouter</span>
       </Button>
 
       <MenuItemFormDialog
