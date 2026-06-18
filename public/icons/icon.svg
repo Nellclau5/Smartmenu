@@ -1,4 +1,48 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <rect width="512" height="512" rx="96" fill="#2d6a4f"/>
-  <text x="256" y="300" text-anchor="middle" font-size="200" fill="white" font-family="system-ui,sans-serif" font-weight="bold">SM</text>
+  <defs>
+    <linearGradient id="bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#40916c"/>
+      <stop offset="1" stop-color="#1b4332"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="128" y1="80" x2="384" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="url(#shine)"/>
+
+  <!-- Menu card -->
+  <rect x="108" y="96" width="220" height="320" rx="28" fill="#ffffff" fill-opacity="0.96"/>
+  <rect x="136" y="132" width="120" height="14" rx="7" fill="#2d6a4f" fill-opacity="0.85"/>
+  <rect x="136" y="164" width="164" height="10" rx="5" fill="#95d5b2"/>
+  <rect x="136" y="188" width="148" height="10" rx="5" fill="#95d5b2"/>
+  <rect x="136" y="212" width="156" height="10" rx="5" fill="#95d5b2"/>
+  <rect x="136" y="252" width="108" height="10" rx="5" fill="#d8f3dc"/>
+  <rect x="136" y="276" width="140" height="10" rx="5" fill="#d8f3dc"/>
+  <rect x="136" y="300" width="124" height="10" rx="5" fill="#d8f3dc"/>
+  <circle cx="156" cy="352" r="18" fill="#2d6a4f" fill-opacity="0.15"/>
+  <path d="M148 352h16M156 344v16" stroke="#2d6a4f" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- QR code block -->
+  <rect x="292" y="228" width="132" height="132" rx="20" fill="#ffffff" fill-opacity="0.96"/>
+  <rect x="312" y="248" width="36" height="36" rx="6" fill="#1b4332"/>
+  <rect x="320" y="256" width="20" height="20" rx="3" fill="#ffffff"/>
+  <rect x="368" y="248" width="36" height="36" rx="6" fill="#1b4332"/>
+  <rect x="376" y="256" width="20" height="20" rx="3" fill="#ffffff"/>
+  <rect x="312" y="304" width="36" height="36" rx="6" fill="#1b4332"/>
+  <rect x="320" y="312" width="20" height="20" rx="3" fill="#ffffff"/>
+  <rect x="360" y="304" width="10" height="10" rx="2" fill="#1b4332"/>
+  <rect x="378" y="304" width="10" height="10" rx="2" fill="#1b4332"/>
+  <rect x="396" y="304" width="10" height="10" rx="2" fill="#1b4332"/>
+  <rect x="360" y="322" width="10" height="10" rx="2" fill="#1b4332"/>
+  <rect x="378" y="340" width="10" height="10" rx="2" fill="#1b4332"/>
+  <rect x="396" y="322" width="10" height="10" rx="2" fill="#1b4332"/>
+  <rect x="360" y="358" width="10" height="10" rx="2" fill="#1b4332"/>
+  <rect x="396" y="358" width="10" height="10" rx="2" fill="#1b4332"/>
+
+  <!-- Fork accent -->
+  <path d="M356 118v44c0 8.837-7.163 16-16 16h-4" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M344 118v60" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M332 118v28c0 4.418 3.582 8 8 8h8" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
