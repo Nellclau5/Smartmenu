@@ -14,6 +14,7 @@ import { ThemeToggle } from "@/components/public-menu/theme-toggle";
 import { OfflineCacheHint } from "@/components/public-menu/offline-cache-hint";
 import { CartProvider } from "@/components/public-menu/cart-context";
 import { OrderCart } from "@/components/public-menu/order-cart";
+import { OrderTrackingAccess } from "@/components/public-menu/order-tracking-access";
 import { getOrderedCategories, getRestaurantCategories } from "@/lib/categories";
 import {
   DEFAULT_MENU_FILTERS,
@@ -66,13 +67,7 @@ export function PublicMenuView({ restaurant, items, demoMode = false }: PublicMe
 
 
   const isFiltering =
-
     filters.search.trim() !== "" ||
-
-    filters.vegetarian ||
-
-    filters.spicy ||
-
     filters.price !== "all";
 
 
@@ -183,6 +178,12 @@ export function PublicMenuView({ restaurant, items, demoMode = false }: PublicMe
 
 
       <header className="relative safe-top px-4 pb-2 pt-6 text-center">
+
+        <OrderTrackingAccess
+          slug={restaurant.slug}
+          demoMode={demoMode}
+          className="absolute left-4 top-6"
+        />
 
         <ThemeToggle className="absolute right-4 top-6" />
 

@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useCart } from "@/components/public-menu/cart-context";
+import { saveTrackedOrder } from "@/lib/order-tracking-storage";
 import { formatPrice } from "@/lib/utils";
 import {
   getNotificationPermission,
@@ -85,6 +86,10 @@ export function OrderCart({ restaurant, demoMode = false }: OrderCartProps) {
       }
 
       const newOrderId = data.order_id as string;
+
+      if (!demoMode) {
+        saveTrackedOrder(restaurant.slug, newOrderId);
+      }
 
       void notifyUser(
         {

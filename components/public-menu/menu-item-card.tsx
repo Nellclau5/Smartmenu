@@ -1,9 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { MenuItemThumbnail } from "@/components/ui/menu-item-thumbnail";
 import { useCart } from "@/components/public-menu/cart-context";
 import { formatPrice } from "@/lib/utils";
@@ -15,32 +23,41 @@ interface MenuItemCardProps {
   showCategory?: boolean;
 }
 
-/** Carte plat côté client — ajout au panier */
+/** Carte plat compacte — détail au clic, image grande uniquement dans la modale */
 export function MenuItemCard({ item, showCategory = false }: MenuItemCardProps) {
   const { addItem } = useCart();
+  const [detailOpen, setDetailOpen] = useState(false);
   const unavailable = !item.is_available;
 
+  function handleAdd(e?: React.MouseEvent) {
+    e?.stopPropagation();
+    if (!unavailable) addItem(item);
+  }
+
   return (
-    <Card
-      className={cn(
-        "overflow-hidden border border-border/60 bg-card shadow-sm transition-opacity",
-        unavailable && "opacity-55 grayscale-[0.6]"
-      )}
-    >
-      <CardContent className="p-0">
-        {item.image_url && (
-          <MenuItemThumbnail
-            imageUrl={item.image_url}
-            name={item.name}
-            size="lg"
-            className="aspect-[16/9] max-h-44 rounded-none"
-          />
+    <>
+      <Card
+        role="button"
+        tabIndex={0}
+        onClick={() => setDetailOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setDetailOpen(true);
+          }
+        }}
+        className={cn(
+          "cursor-pointer overflow-hidden border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md",
+          unavailable && "opacity-55 grayscale-[0.6]"
         )}
-        <div className="flex items-start justify-between gap-3 p-4">
+      >
+        <CardContent className="flex items-start justify-between gap-3 p-4">
           <div className="flex min-w-0 flex-1 gap-3">
-            {!item.image_url && (
-              <MenuItemThumbnail imageUrl={null} name={item.name} size="sm" />
-            )}
+            <MenuItemThumbnail
+              imageUrl={item.image_url}
+              name={item.name}
+              size="sm"
+            />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-display text-base font-bold leading-snug text-foreground">
@@ -63,15 +80,10 @@ export function MenuItemCard({ item, showCategory = false }: MenuItemCardProps) 
                 )}
                 {unavailable && (
                   <Badge variant="destructive" className="text-[10px] font-medium">
-                    Indisponible ce jour
+                    Indisponible
                   </Badge>
                 )}
               </div>
-              {item.description && (
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              )}
             </div>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
@@ -83,7 +95,7 @@ export function MenuItemCard({ item, showCategory = false }: MenuItemCardProps) 
                 type="button"
                 size="sm"
                 className="h-9 rounded-xl gap-1.5 px-3"
-                onClick={() => addItem(item)}
+                onClick={handleAdd}
                 aria-label={`Ajouter ${item.name} au panier`}
               >
                 <Plus className="h-4 w-4" />
@@ -91,8 +103,62 @@ export function MenuItemCard({ item, showCategory = false }: MenuItemCardProps) 
               </Button>
             )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto p-0 gap-0">
+          {item.image_url && (
+            <MenuItemThumbnail
+              imageUrl={item.image_url}
+              name={item.name}
+              size="lg"
+              className="aspect-[16/9] w-full max-h-56 rounded-none rounded-t-2xl"
+            />
+          )}
+          <div className="space-y-4 p-6">
+            <DialogHeader className="text-left space-y-2">
+              <div className="flex flex-wrap items-center gap-2 pr-8">
+                <DialogTitle className="text-xl">{item.name}</DialogTitle>
+                {showCategory && (
+                  <Badge variant="secondary">{item.category}</Badge>
+                )}
+              </div>
+              <p className="text-lg font-bold text-primary">
+                {formatPrice(Number(item.price))}
+              </p>
+            </DialogHeader>
+
+            {item.description ? (
+              <DialogDescription className="text-left text-sm leading-relaxed text-foreground/80">
+                {item.description}
+              </DialogDescription>
+            ) : (
+              <DialogDescription className="text-left">
+                Aucune description pour ce plat.
+              </DialogDescription>
+            )}
+
+            {(item.is_vegetarian || item.is_spicy) && (
+              <div className="flex flex-wrap gap-2">
+                {item.is_vegetarian && <Badge variant="secondary">Végétarien</Badge>}
+                {item.is_spicy && <Badge variant="secondary">Épicé</Badge>}
+              </div>
+            )}
+
+            {!unavailable ? (
+              <Button className="w-full h-12 rounded-xl gap-2" onClick={handleAdd}>
+                <Plus className="h-4 w-4" />
+                Ajouter au panier
+              </Button>
+            ) : (
+              <p className="text-center text-sm text-destructive font-medium">
+                Ce plat est indisponible pour le moment.
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
