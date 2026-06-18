@@ -89,15 +89,12 @@ SET search_path = public
 AS $$
 DECLARE
   v_slug TEXT;
-  v_restaurant_id UUID;
 BEGIN
   v_slug := 'resto-' || left(replace(NEW.id::text, '-', ''), 8);
 
   INSERT INTO restaurants (user_id, name, slug, is_active)
-  VALUES (NEW.id, 'Mon Restaurant', v_slug, true)
-  RETURNING id INTO v_restaurant_id;
+  VALUES (NEW.id, 'Mon Restaurant', v_slug, true);
 
-  PERFORM seed_sample_menu_items(v_restaurant_id);
   RETURN NEW;
 END;
 $$;

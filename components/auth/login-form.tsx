@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import {
   createRestaurantForUser,
-  seedSampleMenuItems,
 } from "@/lib/restaurant";
 
 interface LoginFormProps {
@@ -61,7 +60,7 @@ export function LoginForm({
       }
 
       if (data.session && data.user) {
-        const { restaurant, error: restError } = await createRestaurantForUser(
+        const { error: restError } = await createRestaurantForUser(
           supabase,
           data.user.id,
           restaurantName.trim() || "Mon Restaurant"
@@ -71,10 +70,6 @@ export function LoginForm({
           setLoading(false);
           setError(restError);
           return;
-        }
-
-        if (restaurant) {
-          await seedSampleMenuItems(supabase, restaurant.id);
         }
       } else {
         setLoading(false);

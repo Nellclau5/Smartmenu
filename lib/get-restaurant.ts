@@ -1,7 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   createRestaurantForUser,
-  seedSampleMenuItems,
 } from "@/lib/restaurant";
 import type { Restaurant } from "@/lib/supabase/types";
 
@@ -25,10 +24,6 @@ export async function getOrCreateRestaurant(
     userId,
     "Mon Restaurant"
   );
-
-  if (restaurant) {
-    await seedSampleMenuItems(supabase, restaurant.id);
-  }
 
   return { restaurant, error };
 }
