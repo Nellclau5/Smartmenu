@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,19 @@ export function LoginForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(defaultSignUp);
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.replace(redirectTo);
+        router.refresh();
+      } else {
+        setCheckingSession(false);
+      }
+    });
+  }, [redirectTo, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,6 +97,14 @@ export function LoginForm({
     setLoading(false);
     router.push(redirectTo);
     router.refresh();
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="flex w-full max-w-sm items-center justify-center py-12 text-sm text-muted-foreground">
+        Vérification de la session...
+      </div>
+    );
   }
 
   return (

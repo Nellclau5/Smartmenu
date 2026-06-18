@@ -2,7 +2,7 @@
   "name": "Smart Menu",
   "short_name": "SmartMenu",
   "description": "Menu QR dynamique pour restaurants",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2d6a4f",

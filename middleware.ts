@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { supabaseCookieOptions } from "@/lib/supabase/cookie-options";
 
 export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,11 +13,9 @@ export async function middleware(request: NextRequest) {
 
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseKey,
-    {
-      cookies: {
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookieOptions: supabaseCookieOptions,
+    cookies: {
         getAll() {
           return request.cookies.getAll();
         },
@@ -27,9 +26,8 @@ export async function middleware(request: NextRequest) {
             supabaseResponse.cookies.set(name, value, options)
           );
         },
-      },
-    }
-  );
+    },
+  });
 
   const {
     data: { user },
@@ -39,6 +37,10 @@ export async function middleware(request: NextRequest) {
   const isAuthPage =
     request.nextUrl.pathname === "/login" ||
     request.nextUrl.pathname === "/register";
+
+  if (request.nextUrl.pathname === "/" && user) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
 
   if (isDashboard && !user) {
     const url = request.nextUrl.clone();
@@ -57,5 +59,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/", "/dashboard/:path*", "/login", "/register"],
 };

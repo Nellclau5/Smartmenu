@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { Camera, X } from "lucide-react";
+import { Camera, ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ interface ImageUploadProps {
   aspect?: "square" | "wide";
 }
 
-/** Sélecteur d'image mobile-first avec aperçu */
+/** Sélecteur d'image — galerie ou appareil photo */
 export function ImageUpload({
   label = "Photo",
   currentUrl,
@@ -24,7 +24,8 @@ export function ImageUpload({
   className,
   aspect = "square",
 }: ImageUploadProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,13 +44,15 @@ export function ImageUpload({
     setError(null);
     setPreview(URL.createObjectURL(file));
     onFileSelect(file);
+    e.target.value = "";
   }
 
   function handleRemove() {
     setPreview(null);
     setError(null);
     onFileSelect(null);
-    if (inputRef.current) inputRef.current.value = "";
+    if (galleryRef.current) galleryRef.current.value = "";
+    if (cameraRef.current) cameraRef.current.value = "";
   }
 
   return (
@@ -84,35 +87,67 @@ export function ImageUpload({
             </Button>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary transition-colors p-4"
-          >
-            <Camera className="h-8 w-8" />
-            <span className="text-xs font-medium text-center">
-              Appuyer pour ajouter une photo
-            </span>
-          </button>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4">
+            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+            <div className="flex w-full flex-col gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => galleryRef.current?.click()}
+              >
+                Galerie photos
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => cameraRef.current?.click()}
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                Appareil photo
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 
       {displayUrl && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full max-w-[160px]"
-          onClick={() => inputRef.current?.click()}
-        >
-          Changer la photo
-        </Button>
+        <div className="flex max-w-[160px] flex-col gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => galleryRef.current?.click()}
+          >
+            Changer (galerie)
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => cameraRef.current?.click()}
+          >
+            Reprendre une photo
+          </Button>
+        </div>
       )}
 
       <input
-        ref={inputRef}
+        ref={galleryRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/*"
         capture="environment"
         className="hidden"
         onChange={handleFileChange}

@@ -1,7 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 px-4 text-center">
       <div>
@@ -10,7 +21,7 @@ export default function HomePage() {
           Menu QR dynamique pour votre restaurant
         </p>
       </div>
-      <div className="flex flex-col gap-3 w-full max-w-xs">
+      <div className="flex w-full max-w-xs flex-col gap-3">
         <Button asChild>
           <Link href="/login">Se connecter</Link>
         </Button>

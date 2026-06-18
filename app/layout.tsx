@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
+import { AuthSessionRefresh } from "@/components/auth/auth-session-refresh";
 import { ServiceWorkerRegister } from "./sw-register";
 import "./globals.css";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className={`${dmSans.variable} min-h-dvh font-sans`}>
+        <AuthSessionRefresh />
         {children}
         <ServiceWorkerRegister />
       </body>
