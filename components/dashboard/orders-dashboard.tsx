@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bell, ClipboardList, RefreshCw } from "lucide-react";
+import { ClipboardList, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,10 +9,6 @@ import { createClient } from "@/lib/supabase/client";
 import { useRestaurant } from "@/components/dashboard/restaurant-context";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import {
-  getNotificationPermission,
-  requestNotificationPermission,
-} from "@/lib/notifications";
 import {
   ORDER_STATUS_LABELS,
   type Order,
@@ -44,7 +40,6 @@ export function OrdersDashboard() {
   const { id: restaurantId } = useRestaurant();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [notifEnabled, setNotifEnabled] = useState(false);
   const seenIdsRef = useRef<Set<string>>(new Set());
 
   const fetchOrders = useCallback(async () => {
@@ -65,7 +60,6 @@ export function OrdersDashboard() {
   }, [restaurantId]);
 
   useEffect(() => {
-    setNotifEnabled(getNotificationPermission() === "granted");
     fetchOrders();
     const interval = setInterval(fetchOrders, POLL_MS);
     return () => clearInterval(interval);
@@ -98,29 +92,6 @@ export function OrdersDashboard() {
 
   return (
     <div className="space-y-6 px-4 pt-6 md:px-0 md:pt-0">
-      {!notifEnabled && (
-        <Card className="border-primary/30 bg-primary/5 shadow-none">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Bell className="h-8 w-8 text-primary shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm">Notifications de commandes</p>
-              <p className="text-xs text-muted-foreground">
-                Recevez une alerte à chaque nouvelle commande
-              </p>
-            </div>
-            <Button
-              size="sm"
-              onClick={async () => {
-                const ok = await requestNotificationPermission();
-                setNotifEnabled(ok);
-              }}
-            >
-              Activer
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Commandes</h1>

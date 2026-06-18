@@ -2,17 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, CheckCircle2, ChefHat, Clock, Package } from "lucide-react";
+import { CheckCircle2, ChefHat, Clock, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { NotificationEnableBanner } from "@/components/notifications/notification-enable-banner";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import {
   getNotificationPermission,
-  requestNotificationPermission,
-  showBrowserNotification,
+  notifyUser,
 } from "@/lib/notifications";
 import {
   ORDER_STATUS_LABELS,
@@ -58,31 +58,45 @@ export function OrderTrackingView({
 
     if (!error && data) {
       const next = data as Order;
-      setOrder(next);
+      const prevStatus = lastStatusRef.current;
 
-      if (lastStatusRef.current && lastStatusRef.current !== next.status) {
+      if (prevStatus && prevStatus !== next.status) {
         if (next.status === "preparing") {
-          showBrowserNotification("Commande en préparation", {
-            body: `${restaurantName} prépare votre commande.`,
-            tag: `track-${orderId}`,
-          });
+          void notifyUser(
+            {
+              title: "Commande en préparation",
+              body: `${restaurantName} prépare votre commande.`,
+              tag: `track-${orderId}`,
+            },
+            { sound: true, inApp: true }
+          );
         }
         if (next.status === "ready" && !readyNotifiedRef.current) {
           readyNotifiedRef.current = true;
-          showBrowserNotification("Votre commande est prête ! 🎉", {
-            body: `Récupérez-la à la table ${next.table_number}.`,
-            tag: `track-ready-${orderId}`,
-            vibrate: [300, 150, 300, 150, 300],
-          });
+          void notifyUser(
+            {
+              title: "Votre commande est prête !",
+              body: `Récupérez-la à la table ${next.table_number}.`,
+              tag: `track-ready-${orderId}`,
+              vibrate: [300, 150, 300, 150, 300],
+            },
+            { sound: true, inApp: true }
+          );
         }
         if (next.status === "cancelled") {
-          showBrowserNotification("Commande annulée", {
-            body: "Contactez le restaurant pour plus d'informations.",
-            tag: `track-cancel-${orderId}`,
-          });
+          void notifyUser(
+            {
+              title: "Commande annulée",
+              body: "Contactez le restaurant pour plus d'informations.",
+              tag: `track-cancel-${orderId}`,
+            },
+            { sound: false, inApp: true }
+          );
         }
       }
+
       lastStatusRef.current = next.status;
+      setOrder(next);
     }
     setLoading(false);
   }, [orderId, restaurantName]);
@@ -115,10 +129,12 @@ export function OrderTrackingView({
     };
   }, [orderId, fetchOrder]);
 
-  async function enableNotifications() {
-    const granted = await requestNotificationPermission();
-    setNotifEnabled(granted);
-  }
+  useEffect(() => {
+    const sync = () => setNotifEnabled(getNotificationPermission() === "granted");
+    sync();
+    window.addEventListener("focus", sync);
+    return () => window.removeEventListener("focus", sync);
+  }, []);
 
   if (loading) {
     return (
@@ -218,20 +234,10 @@ export function OrderTrackingView({
         </Card>
 
         {!notifEnabled && order.status !== "completed" && order.status !== "cancelled" && (
-          <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="p-4 flex items-center gap-3">
-              <Bell className="h-8 w-8 text-primary shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">Activer les notifications</p>
-                <p className="text-xs text-muted-foreground">
-                  Soyez alerté quand votre commande est prête
-                </p>
-              </div>
-              <Button size="sm" onClick={enableNotifications}>
-                Activer
-              </Button>
-            </CardContent>
-          </Card>
+          <NotificationEnableBanner
+            title="Activer les notifications"
+            description="Soyez alerté (son + bannière) quand votre commande est prête."
+          />
         )}
 
         {order.status === "ready" && (

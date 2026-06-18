@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, UtensilsCrossed, User, LogOut, ClipboardList } from "lucide-react";
+import { NotificationEnableBanner } from "@/components/notifications/notification-enable-banner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -82,6 +83,12 @@ export function DashboardShell({ restaurant, children }: DashboardShellProps) {
       {/* Contenu principal */}
       <div className="md:pl-64">
         <main className="mx-auto max-w-3xl pb-24 md:pb-8 md:px-6 md:py-8">
+          <div className="px-4 pt-3 md:px-0 md:pt-0">
+            <NotificationEnableBanner
+              title="Alertes commandes"
+              description="Son + notification à chaque nouvelle commande client."
+            />
+          </div>
           {children}
         </main>
       </div>

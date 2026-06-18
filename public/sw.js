@@ -1,6 +1,6 @@
 // Service Worker — cache shell + pages menu pour mode hors-ligne
 
-const CACHE_STATIC = "smart-menu-static-v3";
+const CACHE_STATIC = "smart-menu-static-v5";
 
 const CACHE_PAGES = "smart-menu-pages-v2";
 
@@ -58,7 +58,63 @@ self.addEventListener("message", (event) => {
 
     event.waitUntil(cacheMenuPage(event.data.url));
 
+    return;
+
   }
+
+  if (event.data?.type === "SHOW_NOTIFICATION") {
+
+    const { title, options } = event.data;
+
+    event.waitUntil(
+
+      self.registration.showNotification(title, {
+
+        icon: "/icons/icon-192.png",
+
+        badge: "/icons/icon-192.png",
+
+        ...options,
+
+      })
+
+    );
+
+  }
+
+});
+
+
+
+self.addEventListener("notificationclick", (event) => {
+
+  event.notification.close();
+
+  const url = event.notification.data?.url || "/dashboard/orders";
+
+  event.waitUntil(
+
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+
+      for (const client of list) {
+
+        if ("focus" in client) {
+
+          return client.focus();
+
+        }
+
+      }
+
+      if (clients.openWindow) {
+
+        return clients.openWindow(url);
+
+      }
+
+    })
+
+  );
 
 });
 

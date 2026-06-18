@@ -3,16 +3,26 @@
 import { useEffect } from "react";
 
 /**
- * Enregistrement du Service Worker pour la PWA.
- * Placez votre sw.js dans /public/sw.js (généré par next-pwa ou manuel).
+ * Enregistrement du Service Worker — requis pour les notifications PWA sur mobile.
  */
 export function ServiceWorkerRegister() {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
-    // En dev, le SW perturbe le hot-reload — actif en production (npm start)
-    if (process.env.NODE_ENV !== "production") return;
 
-    navigator.serviceWorker.register("/sw.js").catch(console.error);
+    const register = () => {
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/" })
+        .then((reg) => {
+          reg.update().catch(() => {});
+        })
+        .catch(console.error);
+    };
+
+    if (document.readyState === "complete") {
+      register();
+    } else {
+      window.addEventListener("load", register, { once: true });
+    }
   }, []);
 
   return null;

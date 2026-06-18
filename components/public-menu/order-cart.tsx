@@ -17,6 +17,7 @@ import { useCart } from "@/components/public-menu/cart-context";
 import { formatPrice } from "@/lib/utils";
 import {
   getNotificationPermission,
+  notifyUser,
   requestNotificationPermission,
 } from "@/lib/notifications";
 import type { Restaurant } from "@/lib/supabase/types";
@@ -41,6 +42,11 @@ export function OrderCart({ restaurant }: OrderCartProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (getNotificationPermission() === "default") {
+      await requestNotificationPermission();
+    }
+
     setSubmitting(true);
 
     try {
@@ -66,15 +72,22 @@ export function OrderCart({ restaurant }: OrderCartProps) {
         return;
       }
 
-      if (getNotificationPermission() === "default") {
-        await requestNotificationPermission();
-      }
+      const newOrderId = data.order_id as string;
+
+      void notifyUser(
+        {
+          title: "Commande envoyée",
+          body: "Suivez son avancement en temps réel.",
+          url: `/menu/${restaurant.slug}/commande/${newOrderId}`,
+        },
+        { sound: true, inApp: true }
+      );
 
       clearCart();
       setTableNumber("");
       setCustomerName("");
       setNotes("");
-      setOrderId(data.order_id as string);
+      setOrderId(newOrderId);
       setSuccess(true);
     } catch {
       setError("Connexion impossible. Vérifiez votre réseau.");

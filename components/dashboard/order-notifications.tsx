@@ -3,20 +3,40 @@
 import { useCallback, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRestaurant } from "@/components/dashboard/restaurant-context";
-import {
-  getNotificationPermission,
-  requestNotificationPermission,
-  showBrowserNotification,
-} from "@/lib/notifications";
+import { getNotificationPermission, notifyUser } from "@/lib/notifications";
 import type { Order } from "@/lib/supabase/types";
 
-const POLL_MS = 5000;
+const POLL_MS = 4000;
 
-/** Écoute les nouvelles commandes et envoie une notification navigateur */
+function notifyNewOrder(order: Pick<Order, "id" | "table_number" | "customer_name">) {
+  const who = order.customer_name ? ` — ${order.customer_name}` : "";
+  void notifyUser(
+    {
+      title: "Nouvelle commande !",
+      body: `Table ${order.table_number}${who}`,
+      tag: `order-${order.id}`,
+      url: "/dashboard/orders",
+      vibrate: [200, 100, 200],
+    },
+    { sound: true, inApp: true }
+  );
+}
+
+/** Écoute les nouvelles commandes — alerte in-app + son + notification système */
 export function OrderNotifications() {
   const { id: restaurantId } = useRestaurant();
   const knownIdsRef = useRef<Set<string>>(new Set());
   const initializedRef = useRef(false);
+
+  const handleNewOrder = useCallback(
+    (order: Pick<Order, "id" | "table_number" | "customer_name" | "status">) => {
+      if (knownIdsRef.current.has(order.id)) return;
+      knownIdsRef.current.add(order.id);
+      if (order.status !== "pending") return;
+      notifyNewOrder(order);
+    },
+    []
+  );
 
   const checkOrders = useCallback(async () => {
     const supabase = createClient();
@@ -26,7 +46,7 @@ export function OrderNotifications() {
       .eq("restaurant_id", restaurantId)
       .in("status", ["pending", "preparing"])
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(30);
 
     if (!data) return;
 
@@ -39,25 +59,11 @@ export function OrderNotifications() {
     }
 
     for (const order of orders) {
-      if (knownIdsRef.current.has(order.id)) continue;
-      knownIdsRef.current.add(order.id);
-
-      if (order.status !== "pending") continue;
-
-      const who = order.customer_name ? ` — ${order.customer_name}` : "";
-      showBrowserNotification("Nouvelle commande !", {
-        body: `Table ${order.table_number}${who}`,
-        tag: `order-${order.id}`,
-        vibrate: [200, 100, 200],
-      });
+      handleNewOrder(order);
     }
-  }, [restaurantId]);
+  }, [restaurantId, handleNewOrder]);
 
   useEffect(() => {
-    if (getNotificationPermission() === "default") {
-      void requestNotificationPermission();
-    }
-
     void checkOrders();
     const interval = setInterval(checkOrders, POLL_MS);
 
@@ -73,16 +79,7 @@ export function OrderNotifications() {
           filter: `restaurant_id=eq.${restaurantId}`,
         },
         (payload) => {
-          const order = payload.new as Order;
-          if (knownIdsRef.current.has(order.id)) return;
-          knownIdsRef.current.add(order.id);
-
-          const who = order.customer_name ? ` — ${order.customer_name}` : "";
-          showBrowserNotification("Nouvelle commande !", {
-            body: `Table ${order.table_number}${who}`,
-            tag: `order-${order.id}`,
-            vibrate: [200, 100, 200],
-          });
+          handleNewOrder(payload.new as Order);
         }
       )
       .subscribe();
@@ -91,7 +88,7 @@ export function OrderNotifications() {
       clearInterval(interval);
       void supabase.removeChannel(channel);
     };
-  }, [restaurantId, checkOrders]);
+  }, [restaurantId, checkOrders, handleNewOrder]);
 
   return null;
 }
