@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { safeInternalPath } from "@/lib/safe-redirect";
 import { AppLogo } from "@/components/brand/app-logo";
 import { LoginForm } from "@/components/auth/login-form";
 
@@ -19,7 +20,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         </div>
 
-        <LoginForm redirectTo={redirect ?? "/dashboard"} />
+        <LoginForm redirectTo={safeInternalPath(redirect)} />
 
         <p className="text-center text-sm text-muted-foreground">
           Pas de compte ?{" "}

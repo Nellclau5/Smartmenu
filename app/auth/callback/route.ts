@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { safeInternalPath } from "@/lib/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
 
 /** Callback Supabase après confirmation email ou OAuth */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard/menu";
+  const next = safeInternalPath(searchParams.get("next"), "/dashboard/menu");
 
   if (code) {
     const supabase = await createClient();

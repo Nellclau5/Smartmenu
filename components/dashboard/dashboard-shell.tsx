@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AppLogo } from "@/components/brand/app-logo";
 import { usePathname } from "next/navigation";
-import { Home, UtensilsCrossed, User, LogOut, ClipboardList } from "lucide-react";
+import { Home, UtensilsCrossed, User, LogOut, ClipboardList, CreditCard } from "lucide-react";
 import { NotificationEnableBanner } from "@/components/notifications/notification-enable-banner";
 import { PwaInstallBanner } from "@/components/pwa/pwa-install-banner";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Accueil", icon: Home },
   { href: "/dashboard/menu", label: "Menu", icon: UtensilsCrossed },
   { href: "/dashboard/orders", label: "Commandes", icon: ClipboardList },
+  { href: "/dashboard/subscription", label: "Abonnement", icon: CreditCard },
   { href: "/dashboard/profile", label: "Profil", icon: User },
 ];
 

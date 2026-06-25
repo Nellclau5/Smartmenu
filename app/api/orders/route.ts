@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import type { CartLineInput } from "@/lib/supabase/types";
 
 interface OrderBody {
@@ -12,6 +13,15 @@ interface OrderBody {
 
 /** Crée une commande client via RPC Supabase (prix validés côté DB) */
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const limit = rateLimit(`orders:${ip}`, { windowMs: 60_000, max: 15 });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: "Trop de commandes. Réessayez dans quelques instants." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec ?? 60) } }
+    );
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -28,7 +38,7 @@ export async function POST(request: Request) {
 
   const { restaurant_id, table_number, customer_name, notes, items } = body;
 
-  if (!restaurant_id || !table_number?.trim()) {
+  if (!restaurant_id || !table_number?.trim() || table_number.trim().length > 20) {
     return NextResponse.json(
       { error: "Restaurant et numéro de table requis" },
       { status: 400 }
@@ -48,6 +58,10 @@ export async function POST(request: Request) {
 
   if (sanitizedItems.length === 0) {
     return NextResponse.json({ error: "Panier invalide" }, { status: 400 });
+  }
+
+  if (sanitizedItems.length > 30) {
+    return NextResponse.json({ error: "Panier trop volumineux" }, { status: 400 });
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey);

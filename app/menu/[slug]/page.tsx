@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { PublicMenuView } from "@/components/public-menu/public-menu-view";
 import { createClient } from "@/lib/supabase/server";
+import { isRestaurantMenuPublic } from "@/lib/subscription";
 import type { MenuItem, Restaurant } from "@/lib/supabase/types";
 import type { Metadata } from "next";
 
@@ -15,18 +16,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: metaRestaurant } = await supabase
     .from("restaurants")
-    .select("name")
+    .select("name, is_active, subscription_status, subscription_expires_at")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
 
-  const restaurantName = (metaRestaurant as Pick<Restaurant, "name"> | null)?.name;
+  const meta = metaRestaurant as Restaurant | null;
+  if (!meta || !isRestaurantMenuPublic(meta)) {
+    return {
+      title: "Menu",
+      description: "Menu restaurant",
+    };
+  }
 
   return {
-    title: restaurantName ? `${restaurantName} — Menu` : "Menu",
-    description: restaurantName
-      ? `Découvrez le menu de ${restaurantName}`
-      : "Menu restaurant",
+    title: `${meta.name} — Menu`,
+    description: `Découvrez le menu de ${meta.name}`,
   };
 }
 
@@ -47,7 +52,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
 
   const restaurant = restaurantData as Restaurant | null;
 
-  if (!restaurant) {
+  if (!restaurant || !isRestaurantMenuPublic(restaurant)) {
     notFound();
   }
 

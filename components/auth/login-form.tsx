@@ -140,7 +140,7 @@ export function LoginForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength={6}
+          minLength={8}
           autoComplete={isSignUp ? "new-password" : "current-password"}
         />
       </div>
@@ -156,21 +156,6 @@ export function LoginForm({
             ? "Créer mon compte"
             : "Se connecter"}
       </Button>
-
-      {!defaultSignUp && (
-        <button
-          type="button"
-          onClick={() => {
-            setIsSignUp(!isSignUp);
-            setError(null);
-          }}
-          className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {isSignUp
-            ? "Déjà un compte ? Se connecter"
-            : "Pas de compte ? S'inscrire"}
-        </button>
-      )}
     </form>
   );
 }

@@ -6,8 +6,11 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Sans variables Vercel, on laisse passer (évite MIDDLEWARE_INVOCATION_FAILED)
+  // Sans variables : bloquer le dashboard (fail-closed)
   if (!supabaseUrl || !supabaseKey) {
+    if (request.nextUrl.pathname.startsWith("/dashboard")) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
     return NextResponse.next({ request });
   }
 

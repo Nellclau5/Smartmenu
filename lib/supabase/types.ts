@@ -21,7 +21,23 @@ export interface Restaurant {
   menu_categories: string[] | null;
   auto_delete_orders_after_24h?: boolean;
   subscription_status: SubscriptionStatus;
+  subscription_expires_at?: string | null;
   is_active: boolean;
+}
+
+export type SubscriptionPaymentStatus = "pending" | "completed" | "failed" | "expired";
+
+export interface SubscriptionPayment {
+  id: string;
+  restaurant_id: string;
+  user_id: string;
+  geniuspay_reference: string;
+  amount: number;
+  currency: string;
+  status: SubscriptionPaymentStatus;
+  plan: string;
+  created_at: string;
+  completed_at: string | null;
 }
 
 export interface MenuItem {

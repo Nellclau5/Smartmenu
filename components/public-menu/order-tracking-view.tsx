@@ -50,11 +50,9 @@ export function OrderTrackingView({
 
   const fetchOrder = useCallback(async () => {
     const supabase = createClient();
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*, order_items(*)")
-      .eq("id", orderId)
-      .single();
+    const { data, error } = await supabase.rpc("get_order_for_tracking", {
+      p_order_id: orderId,
+    });
 
     if (!error && data) {
       const next = data as Order;
@@ -106,26 +104,8 @@ export function OrderTrackingView({
     void fetchOrder();
     const interval = setInterval(fetchOrder, POLL_MS);
 
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`order-track-${orderId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "orders",
-          filter: `id=eq.${orderId}`,
-        },
-        () => {
-          void fetchOrder();
-        }
-      )
-      .subscribe();
-
     return () => {
       clearInterval(interval);
-      void supabase.removeChannel(channel);
     };
   }, [orderId, fetchOrder]);
 

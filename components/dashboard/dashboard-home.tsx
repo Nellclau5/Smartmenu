@@ -1,11 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { QrCode, UtensilsCrossed, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QrCodeModal } from "@/components/dashboard/qr-code-modal";
 import { createClient } from "@/lib/supabase/client";
+import {
+  formatExpiryDate,
+  getEffectiveSubscriptionStatus,
+} from "@/lib/subscription";
 import type { Restaurant } from "@/lib/supabase/types";
 
 const SUBSCRIPTION_LABELS = {
@@ -39,7 +44,9 @@ export function DashboardHome({ restaurant }: DashboardHomeProps) {
       });
   }, [restaurant.id]);
 
-  const sub = SUBSCRIPTION_LABELS[restaurant.subscription_status] ?? SUBSCRIPTION_LABELS.trial;
+  const effectiveStatus = getEffectiveSubscriptionStatus(restaurant);
+  const sub = SUBSCRIPTION_LABELS[effectiveStatus] ?? SUBSCRIPTION_LABELS.trial;
+  const expiryLabel = formatExpiryDate(restaurant.subscription_expires_at);
 
   return (
     <div className="space-y-6 px-4 pt-6 md:px-0 md:pt-0">
@@ -69,12 +76,21 @@ export function DashboardHome({ restaurant }: DashboardHomeProps) {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
               <CreditCard className="h-5 w-5 text-muted-foreground" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${sub.color}`}>
                 {sub.label}
               </span>
-              <p className="text-xs text-muted-foreground mt-1">{stats.total} plats au total</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">
+                {expiryLabel && effectiveStatus === "active"
+                  ? `Jusqu'au ${expiryLabel}`
+                  : `${stats.total} plats au total`}
+              </p>
             </div>
+            {(effectiveStatus === "trial" || effectiveStatus === "expired") && (
+              <Button variant="outline" size="sm" className="shrink-0 rounded-xl" asChild>
+                <Link href="/dashboard/subscription">S&apos;abonner</Link>
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>
