@@ -52,9 +52,12 @@ export async function createRestaurantForUser(
 }
 
 /** URL publique du menu */
-export function getMenuPublicUrl(slug: string): string {
+export function getMenuPublicUrl(slug: string, options?: { src?: string }): string {
+  const path = `/menu/${slug}`;
+  const query = options?.src ? `?src=${encodeURIComponent(options.src)}` : "";
+
   if (typeof window !== "undefined") {
-    return `${window.location.origin}/menu/${slug}`;
+    return `${window.location.origin}${path}${query}`;
   }
-  return `/menu/${slug}`;
+  return `${path}${query}`;
 }

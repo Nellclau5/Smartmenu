@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import {
-  createRestaurantForUser,
-} from "@/lib/restaurant";
+import { createRestaurantForUser } from "@/lib/restaurant";
 
 interface LoginFormProps {
   redirectTo?: string;
@@ -96,66 +94,83 @@ export function LoginForm({
 
   if (checkingSession) {
     return (
-      <div className="flex w-full max-w-sm items-center justify-center py-12 text-sm text-muted-foreground">
+      <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
         Vérification de la session...
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
-      {isSignUp && (
+    <div className="space-y-1">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {isSignUp && (
+          <div className="space-y-2">
+            <Label htmlFor="restaurant">Nom du restaurant</Label>
+            <Input
+              id="restaurant"
+              type="text"
+              placeholder="Ex: Le Bistrot"
+              value={restaurantName}
+              onChange={(e) => setRestaurantName(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
         <div className="space-y-2">
-          <Label htmlFor="restaurant">Nom du restaurant</Label>
+          <Label htmlFor="email">Email</Label>
           <Input
-            id="restaurant"
-            type="text"
-            placeholder="Ex: Le Bistrot"
-            value={restaurantName}
-            onChange={(e) => setRestaurantName(e.target.value)}
+            id="email"
+            type="email"
+            placeholder="gerant@restaurant.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
+            className="h-12"
           />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Mot de passe</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            autoComplete={isSignUp ? "new-password" : "current-password"}
+            className="h-12"
+          />
+        </div>
+
+        {error && (
+          <p className="text-sm text-destructive text-center">{error}</p>
+        )}
+
+        <Button type="submit" className="w-full h-12 rounded-xl" disabled={loading}>
+          {loading
+            ? "Chargement..."
+            : isSignUp
+              ? "Créer mon compte"
+              : "Se connecter"}
+        </Button>
+      </form>
+
+      {!defaultSignUp && (
+        <p className="pt-2 text-center text-sm text-muted-foreground">
+          Pas de compte ?{" "}
+          <button
+            type="button"
+            className="text-primary hover:underline font-medium"
+            onClick={() => setIsSignUp((v) => !v)}
+          >
+            {isSignUp ? "Se connecter" : "S'inscrire"}
+          </button>
+        </p>
       )}
-
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="gerant@restaurant.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">Mot de passe</Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          autoComplete={isSignUp ? "new-password" : "current-password"}
-        />
-      </div>
-
-      {error && (
-        <p className="text-sm text-destructive text-center">{error}</p>
-      )}
-
-      <Button type="submit" className="w-full h-12" disabled={loading}>
-        {loading
-          ? "Chargement..."
-          : isSignUp
-            ? "Créer mon compte"
-            : "Se connecter"}
-      </Button>
-    </form>
+    </div>
   );
 }

@@ -99,3 +99,39 @@ export interface CartLineInput {
   menu_item_id: string;
   quantity: number;
 }
+
+export type MenuAnalyticsEventType = "menu_scan" | "dish_view";
+
+export interface TopDishAnalytics {
+  menu_item_id: string;
+  name: string;
+  views: number;
+  share_pct: number;
+}
+
+export interface PeakHourAnalytics {
+  hour: number;
+  count: number;
+}
+
+export interface PeakDayAnalytics {
+  day: number;
+  count: number;
+}
+
+export interface RestaurantAnalytics {
+  period_days: number;
+  scans_total: number;
+  scans_previous_period: number;
+  dish_views_total: number;
+  top_dishes: TopDishAnalytics[];
+  peak_hours: PeakHourAnalytics[];
+  peak_days: PeakDayAnalytics[];
+}
+
+export interface TrackMenuEventBody {
+  restaurant_id: string;
+  event_type: MenuAnalyticsEventType;
+  menu_item_id?: string;
+  source?: string;
+}

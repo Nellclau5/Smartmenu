@@ -16,6 +16,7 @@ import { CartProvider } from "@/components/public-menu/cart-context";
 import { OrderCart } from "@/components/public-menu/order-cart";
 import { OrderTrackingAccess } from "@/components/public-menu/order-tracking-access";
 import { getOrderedCategories, getRestaurantCategories } from "@/lib/categories";
+import { trackMenuScan } from "@/lib/menu-analytics";
 import {
   DEFAULT_MENU_FILTERS,
   filterMenuItems,
@@ -27,20 +28,22 @@ import type { MenuCategory, MenuFilters, MenuItem, Restaurant } from "@/lib/supa
 
 
 interface PublicMenuViewProps {
-
   restaurant: Restaurant;
-
   items: MenuItem[];
-
   demoMode?: boolean;
-
+  scanSource?: string;
 }
 
 
 
 /** Vue menu public — header, recherche, catégories sticky, scroll fluide */
 
-export function PublicMenuView({ restaurant, items, demoMode = false }: PublicMenuViewProps) {
+export function PublicMenuView({
+  restaurant,
+  items,
+  demoMode = false,
+  scanSource,
+}: PublicMenuViewProps) {
   const menuCategories = useMemo(
     () => getRestaurantCategories(restaurant),
     [restaurant]
@@ -86,13 +89,14 @@ export function PublicMenuView({ restaurant, items, demoMode = false }: PublicMe
 
 
   useEffect(() => {
+    if (demoMode) return;
+    trackMenuScan(restaurant.id, scanSource);
+  }, [demoMode, restaurant.id, scanSource]);
 
+  useEffect(() => {
     if (visibleCategories.length > 0 && !visibleCategories.includes(activeCategory)) {
-
       setActiveCategory(visibleCategories[0]);
-
     }
-
   }, [visibleCategories, activeCategory]);
 
 
@@ -305,7 +309,13 @@ export function PublicMenuView({ restaurant, items, demoMode = false }: PublicMe
 
                 {filteredItems.map((item) => (
 
-                  <MenuItemCard key={item.id} item={item} showCategory />
+                  <MenuItemCard
+                    key={item.id}
+                    item={item}
+                    showCategory
+                    restaurantId={restaurant.id}
+                    trackViews={!demoMode}
+                  />
 
                 ))}
 
@@ -351,7 +361,12 @@ export function PublicMenuView({ restaurant, items, demoMode = false }: PublicMe
 
                     {catItems.map((item) => (
 
-                      <MenuItemCard key={item.id} item={item} />
+                      <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        restaurantId={restaurant.id}
+                        trackViews={!demoMode}
+                      />
 
                     ))}
 

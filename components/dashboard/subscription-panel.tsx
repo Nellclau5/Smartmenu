@@ -9,17 +9,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import {
   SUBSCRIPTION_PLAN,
+  TRIAL_DAYS,
   formatExpiryDate,
   formatPriceXof,
   getEffectiveSubscriptionStatus,
   getSubscriptionPriceXof,
+  getTrialDaysRemaining,
 } from "@/lib/subscription";
 import type { Restaurant } from "@/lib/supabase/types";
 
 const STATUS_UI = {
   trial: {
     label: "Essai gratuit",
-    description: "Profitez de Smart Menu. Passez à l'abonnement pour continuer sans interruption.",
+    description: `Profitez de Smart Menu pendant ${TRIAL_DAYS} jours. Passez à l'abonnement pour continuer sans interruption.`,
     color: "text-amber-600 bg-amber-50",
   },
   active: {
@@ -53,6 +55,7 @@ export function SubscriptionPanel({ restaurant: initialRestaurant }: Subscriptio
   const effectiveStatus = getEffectiveSubscriptionStatus(restaurant);
   const statusUi = STATUS_UI[effectiveStatus];
   const expiryLabel = formatExpiryDate(restaurant.subscription_expires_at);
+  const daysLeft = getTrialDaysRemaining(restaurant.subscription_expires_at);
 
   const refreshRestaurant = useCallback(async () => {
     const supabase = createClient();
@@ -199,6 +202,12 @@ export function SubscriptionPanel({ restaurant: initialRestaurant }: Subscriptio
               {statusUi.label}
             </span>
             <p className="text-sm text-muted-foreground mt-2">{statusUi.description}</p>
+            {effectiveStatus === "trial" && daysLeft !== null && (
+              <p className="text-sm font-medium mt-2">
+                {daysLeft} jour{daysLeft > 1 ? "s" : ""} restant{daysLeft > 1 ? "s" : ""}
+                {expiryLabel ? ` — fin le ${expiryLabel}` : ""}
+              </p>
+            )}
             {expiryLabel && effectiveStatus === "active" && (
               <p className="text-sm font-medium mt-2">
                 Valide jusqu&apos;au {expiryLabel}
@@ -216,7 +225,7 @@ export function SubscriptionPanel({ restaurant: initialRestaurant }: Subscriptio
           <div>
             <p className="text-3xl font-bold">{formatPriceXof(price)}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Paiement sécurisé via Genius Pay (Wave, Orange Money, MTN, carte…)
+              Après {TRIAL_DAYS} jours d&apos;essai · Paiement sécurisé Genius Pay
             </p>
           </div>
 

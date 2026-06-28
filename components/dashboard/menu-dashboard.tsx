@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AppLoadingScreen } from "@/components/brand/app-loading-screen";
 import { MenuItemCard } from "@/components/dashboard/menu-item-card";
 import { MenuItemFormDialog } from "@/components/dashboard/menu-item-form-dialog";
 import { CategoryManager } from "@/components/dashboard/category-manager";
@@ -121,7 +122,7 @@ export function MenuDashboard() {
         />
 
         {loading ? (
-          <p className="text-center text-muted-foreground py-16">Chargement...</p>
+          <AppLoadingScreen compact label="Chargement du menu…" />
         ) : (
           categories.map((cat) => {
             const catItems = itemsByCategory(cat);

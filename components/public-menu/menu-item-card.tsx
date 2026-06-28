@@ -16,18 +16,33 @@ import { MenuItemThumbnail } from "@/components/ui/menu-item-thumbnail";
 import { useCart } from "@/components/public-menu/cart-context";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { trackDishView } from "@/lib/menu-analytics";
 import type { MenuItem } from "@/lib/supabase/types";
 
 interface MenuItemCardProps {
   item: MenuItem;
   showCategory?: boolean;
+  restaurantId?: string;
+  trackViews?: boolean;
 }
 
 /** Carte plat compacte — détail au clic, image grande uniquement dans la modale */
-export function MenuItemCard({ item, showCategory = false }: MenuItemCardProps) {
+export function MenuItemCard({
+  item,
+  showCategory = false,
+  restaurantId,
+  trackViews = false,
+}: MenuItemCardProps) {
   const { addItem } = useCart();
   const [detailOpen, setDetailOpen] = useState(false);
   const unavailable = !item.is_available;
+
+  function openDetail() {
+    setDetailOpen(true);
+    if (trackViews && restaurantId) {
+      trackDishView(restaurantId, item.id);
+    }
+  }
 
   function handleAdd(e?: React.MouseEvent) {
     e?.stopPropagation();
@@ -39,11 +54,11 @@ export function MenuItemCard({ item, showCategory = false }: MenuItemCardProps) 
       <Card
         role="button"
         tabIndex={0}
-        onClick={() => setDetailOpen(true)}
+        onClick={openDetail}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            setDetailOpen(true);
+            openDetail();
           }
         }}
         className={cn(

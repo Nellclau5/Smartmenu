@@ -6,10 +6,13 @@ import { QrCode, UtensilsCrossed, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QrCodeModal } from "@/components/dashboard/qr-code-modal";
+import { MenuAnalyticsPanel } from "@/components/dashboard/menu-analytics-panel";
 import { createClient } from "@/lib/supabase/client";
 import {
   formatExpiryDate,
   getEffectiveSubscriptionStatus,
+  getTrialDaysRemaining,
+  TRIAL_DAYS,
 } from "@/lib/subscription";
 import type { Restaurant } from "@/lib/supabase/types";
 
@@ -47,6 +50,7 @@ export function DashboardHome({ restaurant }: DashboardHomeProps) {
   const effectiveStatus = getEffectiveSubscriptionStatus(restaurant);
   const sub = SUBSCRIPTION_LABELS[effectiveStatus] ?? SUBSCRIPTION_LABELS.trial;
   const expiryLabel = formatExpiryDate(restaurant.subscription_expires_at);
+  const daysLeft = getTrialDaysRemaining(restaurant.subscription_expires_at);
 
   return (
     <div className="space-y-6 px-4 pt-6 md:px-0 md:pt-0">
@@ -81,9 +85,13 @@ export function DashboardHome({ restaurant }: DashboardHomeProps) {
                 {sub.label}
               </span>
               <p className="text-xs text-muted-foreground mt-1 truncate">
-                {expiryLabel && effectiveStatus === "active"
-                  ? `Jusqu'au ${expiryLabel}`
-                  : `${stats.total} plats au total`}
+                {effectiveStatus === "trial" && daysLeft !== null
+                  ? `${daysLeft}j restants sur ${TRIAL_DAYS}j`
+                  : expiryLabel && effectiveStatus === "active"
+                    ? `Jusqu'au ${expiryLabel}`
+                    : effectiveStatus === "expired"
+                      ? "Abonnement requis"
+                      : `${stats.total} plats au total`}
               </p>
             </div>
             {(effectiveStatus === "trial" || effectiveStatus === "expired") && (
@@ -111,6 +119,8 @@ export function DashboardHome({ restaurant }: DashboardHomeProps) {
         slug={restaurant.slug}
         restaurantName={restaurant.name}
       />
+
+      <MenuAnalyticsPanel restaurantId={restaurant.id} />
     </div>
   );
 }

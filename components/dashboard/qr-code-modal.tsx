@@ -27,7 +27,7 @@ export function QrCodeModal({
   restaurantName,
 }: QrCodeModalProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const menuUrl = getMenuPublicUrl(slug);
+  const menuUrl = getMenuPublicUrl(slug, { src: "qr" });
 
   useEffect(() => {
     if (!open) return;

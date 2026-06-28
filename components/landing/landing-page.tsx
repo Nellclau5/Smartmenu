@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { TRIAL_DAYS, formatPriceXof, getSubscriptionPriceXof } from "@/lib/subscription";
 
 const features = [
   {
@@ -64,7 +65,7 @@ const steps = [
   {
     step: "01",
     title: "Créez votre compte",
-    description: "Inscription gratuite en moins de 2 minutes, sans carte bancaire.",
+    description: `${TRIAL_DAYS} jours d'essai gratuit, sans carte bancaire.`,
   },
   {
     step: "02",
@@ -80,6 +81,7 @@ const steps = [
 
 const navLinks = [
   { href: "#fonctionnalites", label: "Fonctionnalités" },
+  { href: "#tarifs", label: "Tarifs" },
   { href: "#comment-ca-marche", label: "Comment ça marche" },
   { href: "/menu/demo", label: "Démo" },
 ];
@@ -90,6 +92,7 @@ interface LandingPageProps {
 
 export function LandingPage({ isLoggedIn = false }: LandingPageProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const monthlyPrice = formatPriceXof(getSubscriptionPriceXof());
 
   return (
     <div className="relative min-h-dvh overflow-x-hidden bg-background">
@@ -189,7 +192,7 @@ export function LandingPage({ isLoggedIn = false }: LandingPageProps) {
             <div className="text-center lg:text-left">
               <Badge className="mb-5 gap-1.5 px-3 py-1">
                 <Sparkles className="h-3.5 w-3.5" />
-                La carte digitale pour restaurants
+                {TRIAL_DAYS} jours gratuits — sans engagement
               </Badge>
 
               <h1 className="text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.25rem]">
@@ -232,15 +235,15 @@ export function LandingPage({ isLoggedIn = false }: LandingPageProps) {
               <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground lg:justify-start">
                 <li className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  Sans engagement
+                  {TRIAL_DAYS} jours gratuits
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  Sans carte bancaire
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                   Prêt en 5 min
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  Optimisé mobile
                 </li>
               </ul>
             </div>
@@ -280,6 +283,59 @@ export function LandingPage({ isLoggedIn = false }: LandingPageProps) {
                 </article>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section
+          id="tarifs"
+          className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24"
+        >
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Simple et transparent
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              Testez gratuitement pendant {TRIAL_DAYS} jours, puis abonnez-vous
+              pour garder votre menu en ligne.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-12 max-w-md">
+            <article className="relative overflow-hidden rounded-3xl border-2 border-primary bg-card p-8 shadow-lg">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl"
+              />
+              <Badge className="mb-4">{TRIAL_DAYS} jours d&apos;essai gratuit</Badge>
+              <h3 className="text-xl font-bold">Abonnement mensuel</h3>
+              <div className="mt-4 flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-primary">{monthlyPrice}</span>
+                <span className="text-muted-foreground">/ mois</span>
+              </div>
+              <ul className="mt-6 space-y-2.5 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  Menu QR illimité
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  Commandes en salle + notifications
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  Paiement Wave, Orange Money, MTN…
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  Sans engagement — résiliable
+                </li>
+              </ul>
+              {!isLoggedIn && (
+                <Button size="lg" className="mt-8 w-full rounded-2xl" asChild>
+                  <Link href="/register">Commencer l&apos;essai gratuit</Link>
+                </Button>
+              )}
+            </article>
           </div>
         </section>
 
@@ -334,9 +390,8 @@ export function LandingPage({ isLoggedIn = false }: LandingPageProps) {
               Prêt à moderniser votre restaurant ?
             </h2>
             <p className="relative mx-auto mt-4 max-w-xl text-primary-foreground/85">
-              Rejoignez les restaurateurs qui proposent déjà une expérience
-              digitale à leurs clients. Créez votre compte et publiez votre menu
-              dès maintenant.
+              {TRIAL_DAYS} jours gratuits pour tester. Puis {monthlyPrice}/mois
+              pour continuer. Inscrivez-vous en 2 minutes avec votre email.
             </p>
             <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               {isLoggedIn ? (

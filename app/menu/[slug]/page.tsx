@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ src?: string }>;
 }
 
 /** Génère les métadonnées SEO pour le menu public */
@@ -39,8 +40,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * Menu public — /menu/[slug]
  * Page épurée sans navigation globale, optimisée mobile.
  */
-export default async function PublicMenuPage({ params }: PageProps) {
+export default async function PublicMenuPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const { src } = await searchParams;
+  const scanSource = src === "qr" ? "qr" : src?.slice(0, 32);
   const supabase = await createClient();
 
   const { data: restaurantData } = await supabase
@@ -65,5 +68,11 @@ export default async function PublicMenuPage({ params }: PageProps) {
 
   const items = (itemsData ?? []) as MenuItem[];
 
-  return <PublicMenuView restaurant={restaurant} items={items} />;
+  return (
+    <PublicMenuView
+      restaurant={restaurant}
+      items={items}
+      scanSource={scanSource}
+    />
+  );
 }

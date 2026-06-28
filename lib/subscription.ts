@@ -1,5 +1,7 @@
 import type { Restaurant, SubscriptionStatus } from "@/lib/supabase/types";
 
+export const TRIAL_DAYS = 14;
+
 export const SUBSCRIPTION_PLAN = {
   id: "monthly" as const,
   label: "Abonnement mensuel",
@@ -16,18 +18,35 @@ export function formatPriceXof(amount: number): string {
   return `${amount.toLocaleString("fr-FR")} FCFA`;
 }
 
-/** Statut effectif (prend en compte la date d'expiration) */
+function isPast(iso: string | null | undefined): boolean {
+  if (!iso) return false;
+  return new Date(iso) < new Date();
+}
+
+/** Statut effectif (essai 14j ou abonnement actif) */
 export function getEffectiveSubscriptionStatus(
   restaurant: Pick<Restaurant, "subscription_status" | "subscription_expires_at">
 ): SubscriptionStatus {
-  if (
-    restaurant.subscription_status === "active" &&
-    restaurant.subscription_expires_at &&
-    new Date(restaurant.subscription_expires_at) < new Date()
-  ) {
-    return "expired";
+  if (restaurant.subscription_status === "active") {
+    if (isPast(restaurant.subscription_expires_at)) return "expired";
+    return "active";
   }
+
+  if (restaurant.subscription_status === "trial") {
+    if (isPast(restaurant.subscription_expires_at)) return "expired";
+    return "trial";
+  }
+
   return restaurant.subscription_status;
+}
+
+export function getTrialDaysRemaining(
+  expiresAt: string | null | undefined
+): number | null {
+  if (!expiresAt) return null;
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return 0;
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
 export function formatExpiryDate(iso: string | null | undefined): string | null {
@@ -39,7 +58,7 @@ export function formatExpiryDate(iso: string | null | undefined): string | null 
   });
 }
 
-/** Menu public accessible (essai ou abonnement actif non expiré) */
+/** Menu public accessible */
 export function isRestaurantMenuPublic(
   restaurant: Pick<
     Restaurant,
@@ -49,4 +68,10 @@ export function isRestaurantMenuPublic(
   if (!restaurant.is_active) return false;
   const status = getEffectiveSubscriptionStatus(restaurant);
   return status === "trial" || status === "active";
+}
+
+export function requiresSubscription(
+  restaurant: Pick<Restaurant, "subscription_status" | "subscription_expires_at">
+): boolean {
+  return getEffectiveSubscriptionStatus(restaurant) === "expired";
 }
